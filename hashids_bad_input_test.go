@@ -41,12 +41,3 @@ func TestEmptySliceWithEncode(t *testing.T) {
 		t.Errorf("Expected error `%s` but got `%s`", expected, err)
 	}
 }
-
-func TestNegativeNumberWithEncode(t *testing.T) {
-	h, _ := New()
-	_, err := h.Encode([]int{-1})
-	expected := "negative number not supported"
-	if err == nil || err.Error() != expected {
-		t.Errorf("Expected error `%s` but got `%s`", expected, err)
-	}
-}

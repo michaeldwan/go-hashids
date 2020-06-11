@@ -49,6 +49,30 @@ func TestEncodeDecodeInt64(t *testing.T) {
 	}
 }
 
+func TestEncodeDecodeUint64(t *testing.T) {
+	hdata := NewData()
+	hdata.MinLength = 30
+	hdata.Salt = "this is my salt"
+
+	hid, _ := NewWithData(hdata)
+
+	numbers := []uint64{45, 434, 1313, 99, math.MaxInt64}
+	hash, err := hid.EncodeUint64(numbers)
+	if err != nil {
+		t.Fatal(err)
+	}
+	dec, err := hid.DecodeUint64WithError(hash)
+	if err != nil {
+		t.Errorf("Expected no error, got: `%v`", err)
+	}
+
+	t.Logf("%v -> %v -> %v", numbers, hash, dec)
+
+	if !reflect.DeepEqual(dec, numbers) {
+		t.Errorf("Decoded numbers `%v` did not match with original `%v`", dec, numbers)
+	}
+}
+
 func TestEncodeDecodeEpoch(t *testing.T) {
 	hdata := NewData()
 	hdata.MinLength = 30
@@ -228,9 +252,9 @@ func TestDecodeWithWrongSalt(t *testing.T) {
 	}
 }
 
-func checkAllocations(t *testing.T, hid *HashID, values []int64, expectedAllocations float64) {
+func checkAllocations(t *testing.T, hid *HashID, values []uint64, expectedAllocations float64) {
 	allocsPerRun := testing.AllocsPerRun(5, func() {
-		_, err := hid.EncodeInt64(values)
+		_, err := hid.EncodeUint64(values)
 		if err != nil {
 			t.Errorf("Unexpected error encoding test data: %s, %v", err, values)
 		}
@@ -246,11 +270,11 @@ func TestAllocationsPerEncodeTypical(t *testing.T) {
 	hdata.MinLength = 0
 	hid, _ := NewWithData(hdata)
 
-	singleNumber := []int64{42}
+	singleNumber := []uint64{42}
 
-	maxNumbers := []int64{math.MaxInt64, math.MaxInt64, math.MaxInt64, math.MaxInt64}
-	minNumbers := []int64{0, 0, 0, 0}
-	mixNubers := []int64{math.MaxInt64, 0, 1024, math.MaxInt64 / 2}
+	maxNumbers := []uint64{math.MaxInt64, math.MaxInt64, math.MaxInt64, math.MaxInt64}
+	minNumbers := []uint64{0, 0, 0, 0}
+	mixNubers := []uint64{math.MaxInt64, 0, 1024, math.MaxInt64 / 2}
 
 	checkAllocations(t, hid, singleNumber, 5)
 
@@ -271,11 +295,11 @@ func TestAllocationsPerEncodeNoSalt(t *testing.T) {
 	hdata.MinLength = 0
 	hid, _ := NewWithData(hdata)
 
-	singleNumber := []int64{42}
+	singleNumber := []uint64{42}
 
-	maxNumbers := []int64{math.MaxInt64, math.MaxInt64, math.MaxInt64, math.MaxInt64}
-	minNumbers := []int64{0, 0, 0, 0}
-	mixNubers := []int64{math.MaxInt64, 0, 1024, math.MaxInt64 / 2}
+	maxNumbers := []uint64{math.MaxInt64, math.MaxInt64, math.MaxInt64, math.MaxInt64}
+	minNumbers := []uint64{0, 0, 0, 0}
+	mixNubers := []uint64{math.MaxInt64, 0, 1024, math.MaxInt64 / 2}
 
 	checkAllocations(t, hid, singleNumber, 5)
 
@@ -296,11 +320,11 @@ func TestAllocationsPerEncodeMinLength(t *testing.T) {
 	hdata.MinLength = 10
 	hid, _ := NewWithData(hdata)
 
-	singleNumber := []int64{42}
+	singleNumber := []uint64{42}
 
-	maxNumbers := []int64{math.MaxInt64, math.MaxInt64, math.MaxInt64, math.MaxInt64}
-	minNumbers := []int64{0, 0, 0, 0}
-	mixNubers := []int64{math.MaxInt64, 0, 1024, math.MaxInt64 / 2}
+	maxNumbers := []uint64{math.MaxInt64, math.MaxInt64, math.MaxInt64, math.MaxInt64}
+	minNumbers := []uint64{0, 0, 0, 0}
+	mixNubers := []uint64{math.MaxInt64, 0, 1024, math.MaxInt64 / 2}
 
 	checkAllocations(t, hid, singleNumber, 9)
 
@@ -321,11 +345,11 @@ func TestAllocationsPerEncodeMinLengthHigh(t *testing.T) {
 	hdata.MinLength = 100
 	hid, _ := NewWithData(hdata)
 
-	singleNumber := []int64{42}
+	singleNumber := []uint64{42}
 
-	maxNumbers := []int64{math.MaxInt64, math.MaxInt64, math.MaxInt64, math.MaxInt64}
-	minNumbers := []int64{0, 0, 0, 0}
-	mixNubers := []int64{math.MaxInt64, 0, 1024, math.MaxInt64 / 2}
+	maxNumbers := []uint64{math.MaxInt64, math.MaxInt64, math.MaxInt64, math.MaxInt64}
+	minNumbers := []uint64{0, 0, 0, 0}
+	mixNubers := []uint64{math.MaxInt64, 0, 1024, math.MaxInt64 / 2}
 
 	checkAllocations(t, hid, singleNumber, 15)
 
@@ -340,13 +364,13 @@ func TestAllocationsPerEncodeMinLengthHigh(t *testing.T) {
 	checkAllocations(t, hid, append(mixNubers, mixNubers...), 9)
 }
 
-func checkAllocationsDecode(t *testing.T, hid *HashID, values []int64, expectedAllocations float64) {
-	encoded, err := hid.EncodeInt64(values)
+func checkAllocationsDecode(t *testing.T, hid *HashID, values []uint64, expectedAllocations float64) {
+	encoded, err := hid.EncodeUint64(values)
 	if err != nil {
 		t.Errorf("Unexpected error encoding test data: %s, %v", err, values)
 	}
 	allocsPerRun := testing.AllocsPerRun(5, func() {
-		_, err := hid.DecodeInt64WithError(encoded)
+		_, err := hid.DecodeUint64WithError(encoded)
 		if err != nil {
 			t.Errorf("Unexpected error decoding test data: %s, %v", err, values)
 		}
@@ -362,11 +386,11 @@ func TestAllocationsDecodeTypical(t *testing.T) {
 	hdata.MinLength = 0
 	hid, _ := NewWithData(hdata)
 
-	singleNumber := []int64{42}
+	singleNumber := []uint64{42}
 
-	maxNumbers := []int64{math.MaxInt64, math.MaxInt64, math.MaxInt64, math.MaxInt64}
-	minNumbers := []int64{0, 0, 0, 0}
-	mixNubers := []int64{math.MaxInt64, 0, 1024, math.MaxInt64 / 2}
+	maxNumbers := []uint64{math.MaxInt64, math.MaxInt64, math.MaxInt64, math.MaxInt64}
+	minNumbers := []uint64{0, 0, 0, 0}
+	mixNubers := []uint64{math.MaxInt64, 0, 1024, math.MaxInt64 / 2}
 
 	checkAllocationsDecode(t, hid, singleNumber, 11)
 
